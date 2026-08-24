@@ -49,6 +49,12 @@ class WorkstationViewModel @Inject constructor(
     val userPreferencesRepository: UserPreferencesRepository
 ) : AndroidViewModel(application) {
 
+    private val _isLoopingEnabled = MutableStateFlow(false)
+    val isLoopingEnabled: StateFlow<Boolean> = _isLoopingEnabled
+    private val _loopStartMs = MutableStateFlow(0L)
+    val loopStartMs: StateFlow<Long> = _loopStartMs
+    private val _loopEndMs = MutableStateFlow(0L)
+    val loopEndMs: StateFlow<Long> = _loopEndMs
     private val database = AppDatabase.getDatabase(application)
     val engine = AudioWorkstationEngine()
     private val sharedPrefs = application.getSharedPreferences("hz_audio_workstation_prefs", android.content.Context.MODE_PRIVATE)
