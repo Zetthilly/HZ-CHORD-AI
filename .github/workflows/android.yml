@@ -2,61 +2,40 @@ name: Android CI
 
 on:
   push:
-    branches: ["main", "master"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main", "master"]
+    branches: [ "main" ]
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   build:
+    name: Build Application
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
 
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses || true
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        validate-wrappers: false
 
-      - name: Install Android SDK components
-        run: |
-          sdkmanager "platform-tools" \
-            "platforms;android-36" \
-            "build-tools;35.0.0" \
-            "cmake;3.22.1" \
-            "ndk;27.0.12077973"
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --stacktrace
 
-      - name: Setup Gradle 8.10.2
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.10.2"
-          validate-wrappers: false
-
-      - name: Verify Gradle
-        run: gradle --version
-
-      - name: Clean project
-        run: gradle --no-daemon clean
-
-      - name: Build debug APK
-        run: gradle --no-daemon :app:assembleDebug --stacktrace --info
-
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: hz-chord-ai-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Chordroid-Pro-v2.0-Debug
+        path: app/build/outputs/apk/debug/app-debug.apk
