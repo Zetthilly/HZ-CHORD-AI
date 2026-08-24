@@ -1,6 +1,5 @@
 package com.example.ui
 
-import androidx.compose.foundation.layout.offset
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -28,7 +27,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -40,29 +39,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Equalizer
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Waves
-import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Equalizer
-import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -75,16 +74,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
@@ -96,12 +93,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.audio.DetectedChordInfo
+import com.example.audio.RealAudioDecoder
 import com.example.audio.StemSeparationState
 import com.example.audio.TuningNote
-import com.example.audio.RealAudioDecoder
-import com.example.data.ImportedAudioMetadata
-import com.example.data.ProjectSession
-import com.example.data.GuitarLick
 import com.example.viewmodel.WorkstationViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -231,7 +225,6 @@ private fun ScreenHeader(title: String, subtitle: String? = null, onBack: (() ->
     }
 }
 
-
 @Composable
 private fun DashboardScreen(vm: WorkstationViewModel, nav: (Screen) -> Unit) {
     val fileName by vm.uploadedFileName.collectAsStateWithLifecycle()
@@ -303,7 +296,7 @@ private fun DashboardScreen(vm: WorkstationViewModel, nav: (Screen) -> Unit) {
     }
 }
 
-@Composable private fun SessionRow(session: ProjectSession) {
+@Composable private fun SessionRow(session: com.example.data.ProjectSession) {
     GlassCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Default.MusicNote, null, tint = Cyan, modifier = Modifier.size(20.dp))
@@ -517,18 +510,103 @@ private fun ModulesScreen(nav: (Screen) -> Unit) {
     val state by vm.stemSeparation.collectAsStateWithLifecycle()
     val file by vm.uploadedFileName.collectAsStateWithLifecycle()
     ModulePage("Stem Separation", "ON-DEVICE AUDIO SEPARATION", nav, Screen.STEMS) {
-        GlassCard { Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.MusicNote, null, tint = Green); Spacer(Modifier.width(8.dp)); Text(file ?: "No audio loaded", color = TextMain, modifier = Modifier.weight(1f)); TextButton(onClick = { vm.runStemSeparation("balanced") }) { Text("RUN", color = Green) } } }
+        GlassCard { 
+            Row(verticalAlignment = Alignment.CenterVertically) { 
+                Icon(Icons.Default.MusicNote, null, tint = Green)
+                Spacer(Modifier.width(8.dp))
+                Text(file ?: "No audio loaded", color = TextMain, modifier = Modifier.weight(1f))
+                TextButton(onClick = { vm.runStemSeparation("balanced") }) { 
+                    Text("RUN", color = Green) 
+                } 
+            } 
+        }
+        
         when (state) {
             StemSeparationState.Idle -> GlassCard { Text("No stem separation run yet.", color = TextMuted) }
-            is StemSeparationState.Processing -> { val p = state as StemSeparationState.Processing; GlassCard { Text("SEPARATION PROGRESS", color = Green, fontSize = 11.sp); ProgressBar(p.progress, Green); Text("${(p.progress*100).toInt()}%", color = TextMain, fontSize = 22.sp) } }
-            is StemSeparationState.Success -> { val s = state as StemSeparationState.Success; StemMixerRows(s.mixerState.channels.map { it.name to it.volume }) }
+            is StemSeparationState.Processing -> { 
+                val p = state as StemSeparationState.Processing
+                GlassCard { 
+                    Text("SEPARATION PROGRESS", color = Green, fontSize = 11.sp)
+                    ProgressBar(p.progress, Green)
+                    Text("${(p.progress*100).toInt()}%", color = TextMain, fontSize = 22.sp) 
+                } 
+            }
+            is StemSeparationState.Success -> { 
+                val s = state as StemSeparationState.Success
+                StemInteractiveMixerRows(
+                    channels = s.mixerState.channels.map { it.name to it.volume },
+                    onExportStem = { stemName ->
+                        // Handle standalone stem storage export
+                    },
+                    onSendToModule = { targetScreen ->
+                        // Module file exchange navigation handoff
+                        nav(targetScreen)
+                    }
+                )
+            }
             is StemSeparationState.Error -> GlassCard { Text((state as StemSeparationState.Error).message, color = Pink, fontSize = 12.sp) }
         }
     }
 }
 
-@Composable private fun StemMixerRows(channels: List<Pair<String, Float>>) {
-    GlassCard { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { channels.take(8).forEach { (name, volume) -> Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Equalizer, null, tint = Green, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(name, color = TextMain, fontSize = 12.sp, modifier = Modifier.width(80.dp)); ProgressBar(volume.coerceIn(0f,1f), Green, Modifier.weight(1f)); Text("${(volume*100).toInt()}%", color = TextMuted, fontSize = 10.sp, modifier = Modifier.width(38.dp)) } } } }
+@Composable
+private fun StemInteractiveMixerRows(
+    channels: List<Pair<String, Float>>,
+    onExportStem: (String) -> Unit,
+    onSendToModule: (Screen) -> Unit
+) {
+    GlassCard {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            channels.take(8).forEach { (name, volume) ->
+                var localVolume by remember(volume) { mutableFloatStateOf(volume) }
+                var showOptionsMenu by remember { mutableStateOf(false) }
+
+                Column(modifier = Modifier.fillMaxWidth().background(Panel2, RoundedCornerShape(8.dp)).padding(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Default.Equalizer, null, tint = Green, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(name, color = TextMain, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                        
+                        // Direct Export Button
+                        IconButton(onClick = { onExportStem(name) }, modifier = Modifier.size(28.dp)) {
+                            Icon(Icons.Default.FolderOpen, contentDescription = "Export $name", tint = Cyan, modifier = Modifier.size(16.dp))
+                        }
+                        
+                        // Send To Module Dropdown
+                        Box {
+                            TextButton(onClick = { showOptionsMenu = true }) {
+                                Text("Send To ▾", color = Purple, fontSize = 11.sp)
+                            }
+                            DropdownMenu(
+                                expanded = showOptionsMenu,
+                                onDismissRequest = { showOptionsMenu = false },
+                                modifier = Modifier.background(Panel)
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Chord Detector", color = TextMain, fontSize = 12.sp) },
+                                    onClick = { showOptionsMenu = false; onSendToModule(Screen.CHORD) }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Arpeggio Detector", color = TextMain, fontSize = 12.sp) },
+                                    onClick = { showOptionsMenu = false; onSendToModule(Screen.ARPEGGIO) }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Transcription", color = TextMain, fontSize = 12.sp) },
+                                    onClick = { showOptionsMenu = false; onSendToModule(Screen.TRANSCRIPTION) }
+                                )
+                            }
+                        }
+                    }
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                        ProgressBar(localVolume.coerceIn(0f, 1f), Green, Modifier.weight(1f))
+                        Spacer(Modifier.width(8.dp))
+                        Text("${(localVolume * 100).toInt()}%", color = TextMuted, fontSize = 10.sp, modifier = Modifier.width(34.dp))
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable private fun TranscriptionScreen(vm: WorkstationViewModel, nav: (Screen) -> Unit) {
