@@ -1,0 +1,34 @@
+name: Extract Code
+on:
+  push:
+    paths:
+      - '*zip'
+  workflow_dispatch:
+
+jobs:
+  unzip-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Extract ZIP and Structure Project
+        run: |
+          # 1. Unzip the file (quotes are required because of the space in the name)
+          unzip "HZ-CHORD-AI-GITHUB-READY-UPDATED (1).zip"
+          
+          # 2. Move everything out of the extracted folder into the main repository root
+          cp -a HZ-CHORD-AI-GITHUB-READY-UPDATED/. .
+          
+          # 3. Delete the empty folder and the original zip file
+          rm -rf HZ-CHORD-AI-GITHUB-READY-UPDATED
+          rm "HZ-CHORD-AI-GITHUB-READY-UPDATED (1).zip"
+          
+      - name: Commit Extracted Files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Establish HZ-CHORD-AI project structure"
+          git push
