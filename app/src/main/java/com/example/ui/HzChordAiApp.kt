@@ -1,5 +1,7 @@
 package com.example.ui
 
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.weight
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
