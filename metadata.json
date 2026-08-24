@@ -1,0 +1,6 @@
+{
+  "name": "HZ Chord AI",
+  "description": "Offline-first Android music analysis workstation with on-device audio decoding, chord recognition, tempo/key analysis, transcription, tuner and stem separation.",
+  "requestFramePermissions": ["RECORD_AUDIO"],
+  "majorCapabilities": ["ON_DEVICE_AUDIO_ANALYSIS"]
+}
