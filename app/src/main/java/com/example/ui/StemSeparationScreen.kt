@@ -52,12 +52,12 @@ fun StemSeparationScreen(
                 stemName = stemName,
                 onExportClick = { onExportStem(stemName) },
                 onSendToChordDetector = { 
-                    val simulatedStemPath = "$filePath_${stemName.lowercase()}.wav"
-                    onSendToModule(Routes.CHORD_DETECTOR, simulatedStemPath)
+                    val simulatedStemPath = "${filePath}_${stemName.lowercase()}.wav"
+                    onSendToModule("chord_detector", simulatedStemPath)
                 },
                 onSendToArpeggio = { 
-                    val simulatedStemPath = "$filePath_${stemName.lowercase()}.wav"
-                    onSendToModule(Routes.ARPEGGIO_DETECTOR, simulatedStemPath)
+                    val simulatedStemPath = "${filePath}_${stemName.lowercase()}.wav"
+                    onSendToModule("arpeggio_detector", simulatedStemPath)
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
