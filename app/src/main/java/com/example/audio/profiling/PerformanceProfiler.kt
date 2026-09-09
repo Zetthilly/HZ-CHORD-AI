@@ -48,7 +48,7 @@ class PerformanceProfiler {
             fftAnalyzer.computeMagnitudeSpectrum(audioFrame)
         }
         
-        val heapAfter = Debug.getNativeHeap().size
+        val heapAfter = Debug.getNativeHeapAllocatedSize()
         val memoryUsed = (heapAfter - heapBefore) / 1024  // Convert to KB
         
         return PerformanceMetrics(
